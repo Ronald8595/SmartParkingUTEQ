@@ -14,6 +14,9 @@
  */
 
 import React from 'react'
+const ListaVehiculos = React.lazy(
+  () => import('./views/parqueadero/ListaVehiculos'),
+)
 
 // Dashboard
 const Dashboard = React.lazy(() => import('./views/dashboard/Dashboard'))
@@ -86,47 +89,7 @@ export const routes = [
   { path: '/', exact: true, name: 'Home' },
   { path: '/dashboard', name: 'Dashboard', element: Dashboard },
   { path: '/components', name: 'Components', element: Accordion, exact: true },
-  { path: '/components/accordion', name: 'Accordion', element: Accordion },
-  { path: '/components/alerts', name: 'Alerts', element: Alerts },
-  { path: '/components/badge', name: 'Badge', element: Badges },
-  { path: '/components/breadcrumb', name: 'Breadcrumb', element: Breadcrumbs },
-  { path: '/components/buttons', name: 'Buttons', element: Buttons },
-  { path: '/components/button-group', name: 'Button Group', element: ButtonGroups },
-  { path: '/components/cards', name: 'Cards', element: Cards },
-  { path: '/components/carousel', name: 'Carousel', element: Carousels },
-  { path: '/components/chip', name: 'Chip', element: Chip },
-  { path: '/components/chip-set', name: 'Chip Set', element: ChipSet },
-  { path: '/components/collapse', name: 'Collapse', element: Collapses },
-  { path: '/components/dropdowns', name: 'Dropdowns', element: Dropdowns },
-  { path: '/components/list-group', name: 'List group', element: ListGroups },
-  { path: '/components/modals', name: 'Modals', element: Modals },
-  { path: '/components/navs-tabs', name: 'Navs & Tabs', element: Navs },
-  { path: '/components/pagination', name: 'Pagination', element: Paginations },
-  { path: '/components/placeholders', name: 'Placeholders', element: Placeholders },
-  { path: '/components/popovers', name: 'Popovers', element: Popovers },
-  { path: '/components/progress', name: 'Progress', element: Progress },
-  { path: '/components/search-button', name: 'Search Button', element: SearchButton },
-  { path: '/components/spinners', name: 'Spinners', element: Spinners },
-  { path: '/components/tabs', name: 'Tabs', element: Tabs },
-  { path: '/components/tables', name: 'Tables', element: Tables },
-  { path: '/components/toasts', name: 'Toasts', element: Toasts },
-  { path: '/components/tooltips', name: 'Tooltips', element: Tooltips },
-  { path: '/charts', name: 'Charts', element: Charts },
-  { path: '/forms', name: 'Forms', element: FormControl, exact: true },
-  { path: '/forms/form-control', name: 'Form Control', element: FormControl },
-  { path: '/forms/select', name: 'Select', element: Select },
-  { path: '/forms/checks-radios', name: 'Checks & Radios', element: ChecksRadios },
-  { path: '/forms/chip-input', name: 'Chip Input', element: ChipInput },
-  { path: '/forms/range', name: 'Range', element: Range },
-  { path: '/forms/input-group', name: 'Input Group', element: InputGroup },
-  { path: '/forms/floating-labels', name: 'Floating Labels', element: FloatingLabels },
-  { path: '/forms/layout', name: 'Layout', element: Layout },
-  { path: '/forms/validation', name: 'Validation', element: Validation },
-  { path: '/icons', exact: true, name: 'Icons', element: CoreUIIcons },
-  { path: '/icons/coreui-icons', name: 'CoreUI Icons', element: CoreUIIcons },
-  { path: '/icons/flags', name: 'Flags', element: Flags },
-  { path: '/icons/brands', name: 'Brands', element: Brands },
-  { path: '/widgets', name: 'Widgets', element: Widgets },
+  { path: '/parqueadero/vehiculos', name: 'Vehículos y propietarios', element: ListaVehiculos}
 ]
 
 export default routes
