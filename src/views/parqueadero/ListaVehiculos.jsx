@@ -34,7 +34,8 @@ const ListaVehiculos = () => {
     recargar,
     crearVehiculo,
     actualizarVehiculo,
-    eliminarVehiculo,
+    desactivarVehiculo,
+    obtenerEstacionamientoActivo,
   } = useVehiculos()
   const [busqueda, setBusqueda] = useState('')
   const [pagina, setPagina] = useState(1)
@@ -44,7 +45,9 @@ const ListaVehiculos = () => {
   const [vehiculoEnEdicion, setVehiculoEnEdicion] = useState(null)
   const [vehiculoAEliminar, setVehiculoAEliminar] = useState(null)
   const [eliminando, setEliminando] = useState(false)
+  const [consultandoEliminacion, setConsultandoEliminacion] = useState(false)
   const [errorEliminar, setErrorEliminar] = useState('')
+  const [estacionamientoActivo, setEstacionamientoActivo] = useState(null)
   const [mensajeExito, setMensajeExito] = useState('')
 
   useEffect(() => {
@@ -73,23 +76,56 @@ const ListaVehiculos = () => {
       await actualizarVehiculo(vehiculoEnEdicion.id, datos)
       setMensajeExito('Vehículo actualizado correctamente.')
     } else {
-      await crearVehiculo(datos)
-      setMensajeExito('Vehículo creado correctamente.')
+      const resultado = await crearVehiculo(datos)
+      setMensajeExito(
+        resultado?.reactivado
+          ? 'Vehículo reactivado correctamente. Su historial se ha conservado.'
+          : 'Vehículo creado correctamente.',
+      )
     }
     setModalFormVisible(false)
     setVehiculoEnEdicion(null)
   }
 
+  const abrirEliminacion = async (vehiculo) => {
+    setVehiculoAEliminar(vehiculo)
+    setEstacionamientoActivo(null)
+    setErrorEliminar('')
+    setConsultandoEliminacion(true)
+
+    try {
+      const estacionamiento = await obtenerEstacionamientoActivo(vehiculo.id)
+      setEstacionamientoActivo(estacionamiento)
+    } catch (errorConsulta) {
+      setErrorEliminar(`No se pudo comprobar si el vehículo está estacionado: ${errorConsulta.message}`)
+    } finally {
+      setConsultandoEliminacion(false)
+    }
+  }
+
+  const cerrarEliminacion = () => {
+    if (eliminando || consultandoEliminacion) return
+    setVehiculoAEliminar(null)
+    setEstacionamientoActivo(null)
+    setErrorEliminar('')
+  }
+
   const confirmarEliminacion = async () => {
-    if (!vehiculoAEliminar) return
+    if (!vehiculoAEliminar || estacionamientoActivo) return
+
     setEliminando(true)
     setErrorEliminar('')
+
     try {
-      await eliminarVehiculo(vehiculoAEliminar.id)
-      setMensajeExito('Vehículo eliminado correctamente.')
-      setVehiculoAEliminar(null)
+      await desactivarVehiculo(vehiculoAEliminar.id)
+      setMensajeExito('Vehículo retirado correctamente. Su historial se ha conservado.')
+      cerrarEliminacion()
     } catch (errorBorrado) {
-      setErrorEliminar(errorBorrado.message)
+      if (errorBorrado.codigo === 'VEHICULO_ESTACIONADO') {
+        setEstacionamientoActivo(errorBorrado.estacionamiento)
+      } else {
+        setErrorEliminar(errorBorrado.message)
+      }
     } finally {
       setEliminando(false)
     }
@@ -110,6 +146,7 @@ const ListaVehiculos = () => {
         vehiculo.modelo,
         vehiculo.color,
         vehiculo.propietario_nombre,
+        vehiculo.cedula_propietario,
         vehiculo.correo_institucional,
       ].some((valor) => valor?.toLowerCase().includes(texto)),
     )
@@ -267,7 +304,7 @@ const ListaVehiculos = () => {
                       </CTableDataCell>
 
                       <CTableDataCell>
-                        {vehiculo.cedula_enmascarada}
+                        {vehiculo.cedula_propietario}
                       </CTableDataCell>
 
                       <CTableDataCell>
@@ -297,7 +334,7 @@ const ListaVehiculos = () => {
                             color="danger"
                             variant="outline"
                             size="sm"
-                            onClick={() => setVehiculoAEliminar(vehiculo)}
+                            onClick={() => abrirEliminacion(vehiculo)}
                             title="Eliminar vehículo"
                           >
                             <CIcon icon={cilTrash} />
@@ -348,36 +385,62 @@ const ListaVehiculos = () => {
         onCerrar={cerrarFormulario}
       />
 
-      <CModal
-        visible={Boolean(vehiculoAEliminar)}
-        onClose={() => {
-          setVehiculoAEliminar(null)
-          setErrorEliminar('')
-        }}
-        alignment="center"
-      >
+      <CModal visible={Boolean(vehiculoAEliminar)} onClose={cerrarEliminacion} alignment="center">
         <CModalHeader closeButton>
-          <CModalTitle>Eliminar vehículo</CModalTitle>
+          <CModalTitle>
+            {estacionamientoActivo ? 'Vehículo actualmente estacionado' : 'Retirar vehículo'}
+          </CModalTitle>
         </CModalHeader>
+
         <CModalBody>
-          {errorEliminar && <CAlert color="danger">{errorEliminar}</CAlert>}
-          ¿Está seguro de eliminar el vehículo{' '}
-          <strong>{vehiculoAEliminar?.placa}</strong> de{' '}
-          <strong>{vehiculoAEliminar?.propietario_nombre}</strong>? Esta acción no se
-          puede deshacer.
+          {consultandoEliminacion ? (
+            <div className="text-center py-3">
+              <CSpinner color="primary" />
+              <p className="mt-3 mb-0">Comprobando si el vehículo está estacionado...</p>
+            </div>
+          ) : estacionamientoActivo ? (
+            <CAlert color="warning">
+              <strong>⚠️ No se puede retirar este vehículo.</strong>
+              <div className="mt-2">
+                El vehículo <strong>{vehiculoAEliminar?.placa}</strong> de{' '}
+                <strong>{vehiculoAEliminar?.propietario_nombre}</strong> se encuentra
+                actualmente estacionado en el puesto{' '}
+                <strong>{estacionamientoActivo.puesto_codigo}</strong>.
+              </div>
+              <div className="mt-2">
+                Debe registrar su salida antes de poder retirarlo de la lista de vehículos.
+              </div>
+            </CAlert>
+          ) : (
+            <>
+              {errorEliminar && <CAlert color="danger">{errorEliminar}</CAlert>}
+              <p className="mb-2">
+                ¿Está seguro de retirar el vehículo <strong>{vehiculoAEliminar?.placa}</strong>{' '}
+                de <strong>{vehiculoAEliminar?.propietario_nombre}</strong>?
+              </p>
+              <p className="mb-0 text-body-secondary">
+                El vehículo dejará de aparecer en la lista de activos, pero su historial de
+                estacionamientos se conservará y podrá reactivarse posteriormente.
+              </p>
+            </>
+          )}
         </CModalBody>
+
         <CModalFooter>
           <CButton
             color="secondary"
             variant="outline"
-            onClick={() => setVehiculoAEliminar(null)}
-            disabled={eliminando}
+            onClick={cerrarEliminacion}
+            disabled={eliminando || consultandoEliminacion}
           >
-            Cancelar
+            Cerrar
           </CButton>
-          <CButton color="danger" onClick={confirmarEliminacion} disabled={eliminando}>
-            {eliminando ? <CSpinner size="sm" /> : 'Eliminar'}
-          </CButton>
+
+          {!consultandoEliminacion && !estacionamientoActivo && (
+            <CButton color="danger" onClick={confirmarEliminacion} disabled={eliminando}>
+              {eliminando ? <CSpinner size="sm" /> : 'Retirar vehículo'}
+            </CButton>
+          )}
         </CModalFooter>
       </CModal>
     </CCard>

@@ -7,6 +7,7 @@ import {
   CFormCheck,
   CFormInput,
   CFormLabel,
+  CFormSelect,
   CModal,
   CModalBody,
   CModalFooter,
@@ -26,19 +27,15 @@ const VALORES_INICIALES = {
   foto_url: '',
   foto_fuente_url: '',
   foto_propietario_url: '',
-  cedula_enmascarada: '',
+  cedula_propietario: '',
   propietario_nombre: '',
   correo_institucional: '',
   autorizado: true,
+  activo: true,
 }
 
 /**
  * Modal con formulario para crear o editar un vehículo.
- *
- * @param {boolean} visible - Controla si el modal está abierto.
- * @param {object|null} vehiculo - Vehículo a editar. `null` significa creación.
- * @param {Function} onGuardar - async (datos) => void. Lanza si falla.
- * @param {Function} onCerrar - Cierra el modal.
  */
 const VehiculoFormModal = ({ visible, vehiculo, onGuardar, onCerrar }) => {
   const [form, setForm] = useState(VALORES_INICIALES)
@@ -55,8 +52,16 @@ const VehiculoFormModal = ({ visible, vehiculo, onGuardar, onCerrar }) => {
   }, [visible, vehiculo])
 
   const manejarCambio = (campo) => (evento) => {
-    const valor =
-      evento.target.type === 'checkbox' ? evento.target.checked : evento.target.value
+    let valor = evento.target.type === 'checkbox' ? evento.target.checked : evento.target.value
+
+    if (campo === 'placa' && typeof valor === 'string') {
+      valor = valor.toUpperCase()
+    }
+
+    if (campo === 'cedula_propietario' && typeof valor === 'string') {
+      valor = valor.replace(/\D/g, '')
+    }
+
     setForm((anterior) => ({ ...anterior, [campo]: valor }))
   }
 
@@ -64,16 +69,25 @@ const VehiculoFormModal = ({ visible, vehiculo, onGuardar, onCerrar }) => {
     evento.preventDefault()
     setError('')
 
-    if (!form.placa || !form.marca || !form.modelo || !form.propietario_nombre) {
-      setError('Complete al menos placa, marca, modelo y propietario.')
+    if (
+      !form.placa ||
+      !form.marca ||
+      !form.modelo ||
+      !form.propietario_nombre ||
+      !form.cedula_propietario
+    ) {
+      setError('Complete al menos la placa, marca, modelo, cédula y nombre del propietario.')
       return
     }
 
     const datos = {
       ...form,
-      anio: form.anio === '' ? null : Number(form.anio),
+      anio: form.anio === '' || form.anio === null ? null : Number(form.anio),
     }
+
     delete datos.id
+    delete datos.cedula_enmascarada
+    delete datos.activo
 
     setGuardando(true)
     try {
@@ -98,15 +112,27 @@ const VehiculoFormModal = ({ visible, vehiculo, onGuardar, onCerrar }) => {
           <CRow className="g-3">
             <CCol md={4}>
               <CFormLabel>Placa *</CFormLabel>
-              <CFormInput value={form.placa} onChange={manejarCambio('placa')} required />
+              <CFormInput
+                value={form.placa ?? ''}
+                onChange={manejarCambio('placa')}
+                required
+              />
             </CCol>
             <CCol md={4}>
               <CFormLabel>Marca *</CFormLabel>
-              <CFormInput value={form.marca} onChange={manejarCambio('marca')} required />
+              <CFormInput
+                value={form.marca ?? ''}
+                onChange={manejarCambio('marca')}
+                required
+              />
             </CCol>
             <CCol md={4}>
               <CFormLabel>Modelo *</CFormLabel>
-              <CFormInput value={form.modelo} onChange={manejarCambio('modelo')} required />
+              <CFormInput
+                value={form.modelo ?? ''}
+                onChange={manejarCambio('modelo')}
+                required
+              />
             </CCol>
 
             <CCol md={4}>
@@ -119,25 +145,35 @@ const VehiculoFormModal = ({ visible, vehiculo, onGuardar, onCerrar }) => {
             </CCol>
             <CCol md={4}>
               <CFormLabel>Color</CFormLabel>
-              <CFormInput value={form.color} onChange={manejarCambio('color')} />
+              <CFormInput
+                value={form.color ?? ''}
+                onChange={manejarCambio('color')}
+              />
             </CCol>
+            
+            {/* NUEVO CAMPO TIPO TIPO SELECT */}
             <CCol md={4}>
               <CFormLabel>Tipo</CFormLabel>
-              <CFormInput
-                value={form.tipo}
-                onChange={manejarCambio('tipo')}
-                placeholder="Automóvil, moto, camioneta..."
-              />
+              <CFormSelect value={form.tipo ?? ''} onChange={manejarCambio('tipo')}>
+                <option value="">Seleccione...</option>
+                <option value="AUTOMOVIL">Automóvil</option>
+                <option value="MOTOCICLETA">Motocicleta</option>
+                <option value="CAMIONETA">Camioneta</option>
+                <option value="BUS">Bus</option>
+              </CFormSelect>
             </CCol>
 
             <CCol md={6}>
               <CFormLabel>Foto del vehículo (URL)</CFormLabel>
-              <CFormInput value={form.foto_url} onChange={manejarCambio('foto_url')} />
+              <CFormInput
+                value={form.foto_url ?? ''}
+                onChange={manejarCambio('foto_url')}
+              />
             </CCol>
             <CCol md={6}>
               <CFormLabel>Fuente de la foto (URL)</CFormLabel>
               <CFormInput
-                value={form.foto_fuente_url}
+                value={form.foto_fuente_url ?? ''}
                 onChange={manejarCambio('foto_fuente_url')}
               />
             </CCol>
@@ -145,23 +181,25 @@ const VehiculoFormModal = ({ visible, vehiculo, onGuardar, onCerrar }) => {
             <CCol md={6}>
               <CFormLabel>Foto del propietario (URL)</CFormLabel>
               <CFormInput
-                value={form.foto_propietario_url}
+                value={form.foto_propietario_url ?? ''}
                 onChange={manejarCambio('foto_propietario_url')}
               />
             </CCol>
             <CCol md={6}>
-              <CFormLabel>Cédula enmascarada</CFormLabel>
+              <CFormLabel>Cédula del propietario *</CFormLabel>
               <CFormInput
-                value={form.cedula_enmascarada}
-                onChange={manejarCambio('cedula_enmascarada')}
-                placeholder="Ej. 172345***"
+                value={form.cedula_propietario ?? ''}
+                onChange={manejarCambio('cedula_propietario')}
+                placeholder="Ej. 1723456789"
+                maxLength={10}
+                required
               />
             </CCol>
 
             <CCol md={6}>
               <CFormLabel>Nombre del propietario *</CFormLabel>
               <CFormInput
-                value={form.propietario_nombre}
+                value={form.propietario_nombre ?? ''}
                 onChange={manejarCambio('propietario_nombre')}
                 required
               />
@@ -170,14 +208,14 @@ const VehiculoFormModal = ({ visible, vehiculo, onGuardar, onCerrar }) => {
               <CFormLabel>Correo institucional</CFormLabel>
               <CFormInput
                 type="email"
-                value={form.correo_institucional}
+                value={form.correo_institucional ?? ''}
                 onChange={manejarCambio('correo_institucional')}
               />
             </CCol>
 
             <CCol md={12}>
               <CFormCheck
-                checked={form.autorizado}
+                checked={Boolean(form.autorizado)}
                 onChange={manejarCambio('autorizado')}
                 label="Vehículo autorizado"
               />
