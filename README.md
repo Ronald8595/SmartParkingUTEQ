@@ -30,6 +30,11 @@ El parqueadero de la UTEQ cuenta con sensores de distancia por puesto que report
 
 ## Capturas de pantalla
 
+**Home Page de SmartParkingUTEQ**
+
+<img width="1914" height="914" alt="image" src="https://github.com/user-attachments/assets/bbaa3dca-8047-4817-a62b-65f54bd10867" />
+
+
 **Listado de vehículos y propietarios**
 
 <img width="881" height="445" alt="image" src="https://github.com/user-attachments/assets/44bf98c9-2607-4b8c-ac53-68cc756435f8" />
@@ -55,6 +60,8 @@ El parqueadero de la UTEQ cuenta con sensores de distancia por puesto que report
 
 <img width="975" height="134" alt="image" src="https://github.com/user-attachments/assets/307649f9-d375-4488-ae90-77c0da5791cb" />
 
+**Puestos Page - La pagina de puestos tambien tiene incorporado CRUD**
+<img width="1891" height="906" alt="image" src="https://github.com/user-attachments/assets/eb470b36-9f00-4651-9b08-4960be2750cd" />
 
 ## Stack tecnológico
 
