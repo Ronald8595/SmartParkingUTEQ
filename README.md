@@ -11,6 +11,7 @@ El parqueadero de la UTEQ cuenta con sensores de distancia por puesto que report
 - Mantener el padrón de vehículos y propietarios autorizados a estacionar.
 - Ver de un vistazo qué puestos están libres u ocupados, y qué vehículo ocupa cada uno.
 - Consultar el historial de entradas y salidas de un puesto específico.
+- Monitorear el ingreso de vehículos al campus mediante reconocimiento automático de placas (OCR) mediante cámara o imagen subida.
 
 ## Características principales
 
@@ -27,6 +28,12 @@ El parqueadero de la UTEQ cuenta con sensores de distancia por puesto que report
 - Cada puesto se vincula a un sensor mediante `sensor_id_rtdb` y `ruta_firebase`, y su estado/distancia se sincroniza en vivo vía Supabase Realtime.
 - Alta, edición y eliminación de puestos.
 - Detalle de puesto con su historial de ocupaciones (sesiones de entrada/salida).
+
+### Monitoreo de entrada (reconocimiento de placas)
+- Captura de la imagen del vehículo desde la cámara del equipo o subiendo un archivo JPG/PNG, con validación de tipo y tamaño antes de enviarla.
+- Envío de la imagen a un servicio externo de OCR (`VITE_OCR_ENDPOINT`) que reconoce la placa y devuelve el nivel de confianza del reconocimiento.
+- Consulta automática del vehículo reconocido contra el padrón de vehículos y propietarios, mostrando si está registrado y autorizado, junto con sus datos (marca, modelo, año, color, propietario, cédula enmascarada, fotos).
+- Visualización de la imagen procesada devuelta por el OCR: cuando el servicio incluye la imagen con un recuadro verde marcando la placa detectada, el panel muestra tanto la imagen original como la procesada, a modo de confirmación visual de que el escaneo fue correcto.
 
 ## Capturas de pantalla
 
@@ -71,6 +78,7 @@ El parqueadero de la UTEQ cuenta con sensores de distancia por puesto que report
 - **Redux / React Redux** — estado global (tema claro/oscuro del layout).
 - **Supabase** (`@supabase/supabase-js`) — base de datos, autenticación de datos y canal Realtime para la sincronización en vivo de puestos.
 - **Firebase Realtime Database** — origen de las lecturas de los sensores de cada puesto (referenciado desde Supabase vía `sensor_id_rtdb` / `ruta_firebase`).
+- **Servicio externo de OCR** (`VITE_OCR_ENDPOINT`) — reconocimiento de placas a partir de una imagen, usado por el módulo de Monitoreo de entrada.
 
 ## Estructura del proyecto
 
@@ -83,7 +91,13 @@ SmartParkingUTEQ/
 │   ├── hooks/
 │   │   ├── useVehiculos.js      # CRUD de vehículos y propietarios contra Supabase
 │   │   ├── usePuestos.js        # CRUD de puestos + suscripción Realtime + ocupación actual
-│   │   └── useHistorialPuesto.js# Historial de sesiones de un puesto
+│   │   ├── useHistorialPuesto.js# Historial de sesiones de un puesto
+│   │   └── useCamera.js         # Manejo del stream de cámara y captura de foto para el OCR
+│   ├── services/
+│   │   └── ocrService.js        # Llamada al endpoint de OCR (VITE_OCR_ENDPOINT)
+│   ├── utils/
+│   │   ├── ocrResultado.js      # Construye la URL de la imagen marcada devuelta por el OCR
+│   │   └── imageValidator.js    # Valida tipo y tamaño de la imagen antes de enviarla al OCR
 │   ├── lib/
 │   │   └── supabase.js          # Cliente de Supabase (usa variables de entorno VITE_*)
 │   ├── layout/
@@ -97,8 +111,10 @@ SmartParkingUTEQ/
 │   │       ├── HistorialPuesto.jsx
 │   │       ├── PuestoFormModal.jsx
 │   │       ├── PuestoEstadoModal.jsx
-│   │       └── VehiculoFormModal.jsx
-│   ├── _nav.jsx                 # Menú lateral (Home, Vehículos y propietarios, Puestos)
+│   │       ├── VehiculoFormModal.jsx
+│   │       ├── MonitoreoEntrada.jsx       # Captura/subida de imagen + flujo de reconocimiento de placa
+│   │       └── ResultadoReconocimiento.jsx# Panel con el resultado del OCR y los datos del vehículo
+│   ├── _nav.jsx                 # Menú lateral (Home, Vehículos y propietarios, Puestos, Monitoreo de entrada)
 │   ├── routes.js                 # Rutas de la aplicación
 │   └── App.jsx
 └── package.json
@@ -109,6 +125,7 @@ SmartParkingUTEQ/
 ### Requisitos previos
 - Node.js 18 o superior
 - Un proyecto de Supabase con las tablas `vehiculos`, `puestos` y `registros_estacionamiento`
+- Un endpoint de OCR para el reconocimiento de placas (recibe una imagen y devuelve la placa, el nivel de confianza y, opcionalmente, la imagen marcada con el recuadro verde)
 
 ### Pasos
 
@@ -123,6 +140,7 @@ Crear un archivo `.env` en la raíz con las credenciales de Supabase:
 ```
 VITE_SUPABASE_URL=https://tu-proyecto.supabase.co
 VITE_SUPABASE_PUBLISHABLE_KEY=tu-clave-publica
+VITE_OCR_ENDPOINT=https://tu-servicio-ocr/endpoint
 ```
 
 Iniciar el entorno de desarrollo:
