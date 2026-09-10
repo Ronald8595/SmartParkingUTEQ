@@ -17,6 +17,7 @@ import React from 'react'
 const ListaVehiculos = React.lazy(() => import('./views/parqueadero/ListaVehiculos'))
 const Puestos = React.lazy(() => import('./views/parqueadero/Puestos'))
 const DetallePuesto = React.lazy(() => import('./views/parqueadero/DetallePuesto'))
+const MonitoreoEntrada = React.lazy(() => import('./views/parqueadero/MonitoreoEntrada'))
 
 // Dashboard
 const Dashboard = React.lazy(() => import('./views/dashboard/Dashboard'))
@@ -92,6 +93,12 @@ export const routes = [
   { path: '/parqueadero/vehiculos', name: 'Vehículos y propietarios', element: ListaVehiculos },
   { path: '/parqueadero/puestos', name: 'Puestos', element: Puestos, exact: true },
   { path: '/parqueadero/puestos/:id', name: 'Detalle del puesto', element: DetallePuesto },
+  {
+    path: '/parqueadero/monitoreo-entrada',
+    name: 'Monitoreo de entrada',
+    element: MonitoreoEntrada,
+    exact: true,
+  },
 ]
 
 export default routes
