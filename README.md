@@ -70,6 +70,10 @@ El parqueadero de la UTEQ cuenta con sensores de distancia por puesto que report
 **Puestos Page - La pagina de puestos tambien tiene incorporado CRUD**
 <img width="1891" height="906" alt="image" src="https://github.com/user-attachments/assets/eb470b36-9f00-4651-9b08-4960be2750cd" />
 
+**Monitoreo Entrado - Pagina para monitorear que vehivulos ingresan y idenbtificar sus placas**
+<img width="1914" height="914" alt="image" src="https://github.com/user-attachments/assets/e26097d4-1f2c-4781-883f-e528cb8b1683" />
+
+
 ## Stack tecnológico
 
 - **React 19** + **Vite** — interfaz y bundler.
