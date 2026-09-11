@@ -29,7 +29,7 @@ const Login = () => {
           <CCol md={8} lg={6} xl={5}>
             <div className="d-flex flex-column gap-4">
               <div className="text-center">
-                <Logo height={48} />
+                <CIcon icon={Logo} height={48} />
               </div>
               <CCard className="p-4">
                 <CCardBody className="d-flex flex-column gap-4">

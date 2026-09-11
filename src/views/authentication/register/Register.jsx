@@ -1,5 +1,5 @@
 import React from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import {
   CButton,
   CCard,
@@ -21,20 +21,31 @@ import { google } from 'src/assets/brand/google'
 import { Logo } from 'src/assets/brand/logo'
 import { eye } from 'src/assets/icons/eye'
 
-const Login = () => {
+const Register = () => {
+  const navigate = useNavigate()
+
+  const handleSubmit = (event) => {
+    event.preventDefault()
+    navigate('/authentication/check-email')
+  }
+
   return (
     <div className="bg-body-tertiary min-vh-100 d-flex flex-row align-items-center">
       <CContainer>
         <CRow className="justify-content-center">
           <CCol md={8} lg={6} xl={5}>
-            <div className="d-flex flex-column gap-4">
-              <div className="text-center">
-                <Logo height={48} />
+            <div className="d-flex flex-column gap-4 text-center">
+              <div>
+                <CIcon icon={Logo} height={48} />
               </div>
               <CCard className="p-4">
                 <CCardBody className="d-flex flex-column gap-4">
-                  <h2 className="h5 text-center mb-0">Login to your account</h2>
-                  <CForm className="row gy-3">
+                  <h2 className="h5 text-center mb-0">Create new account</h2>
+                  <CForm className="row gy-3 text-start" onSubmit={handleSubmit}>
+                    <CCol xs={12}>
+                      <CFormLabel htmlFor="name">Name</CFormLabel>
+                      <CFormInput id="name" placeholder="Your name" autoComplete="name" />
+                    </CCol>
                     <CCol xs={12}>
                       <CFormLabel htmlFor="email">Email address</CFormLabel>
                       <CFormInput
@@ -45,16 +56,13 @@ const Login = () => {
                       />
                     </CCol>
                     <CCol xs={12}>
-                      <div className="d-flex justify-content-between">
-                        <CFormLabel htmlFor="password">Password</CFormLabel>
-                        <Link to="/authentication/reset-password">I forgot password</Link>
-                      </div>
+                      <CFormLabel htmlFor="password">Password</CFormLabel>
                       <CInputGroup>
                         <CFormInput
                           id="password"
                           type="password"
                           placeholder="Your password"
-                          autoComplete="current-password"
+                          autoComplete="new-password"
                         />
                         <CInputGroupText>
                           <CTooltip content="Show password">
@@ -67,15 +75,22 @@ const Login = () => {
                               <CIcon icon={eye} size="sm" />
                             </CButton>
                           </CTooltip>
-                        </CInputGroupText>
+                        </CInputGroupText>MonitoreoEntrada
                       </CInputGroup>
                     </CCol>
                     <CCol xs={12}>
-                      <CFormCheck id="rememberMe" label="Remember me on this device" />
+                      <CFormCheck
+                        id="acceptTerms"
+                        label={
+                          <>
+                            I accept the <a href="#">terms and conditions</a>
+                          </>
+                        }
+                      />
                     </CCol>
                     <CCol xs={12}>
                       <CButton color="primary" type="submit" className="w-100">
-                        Sign in
+                        Create new account
                       </CButton>
                     </CCol>
                   </CForm>
@@ -101,8 +116,8 @@ const Login = () => {
                   </CRow>
                 </CCardBody>
               </CCard>
-              <div className="text-center text-body-secondary">
-                Need an account? <Link to="/authentication/register">Sign up</Link>
+              <div className="text-body-secondary">
+                Already have an account? <Link to="/authentication/login">Sign in</Link>
               </div>
             </div>
           </CCol>
@@ -112,4 +127,4 @@ const Login = () => {
   )
 }
 
-export default Login
+export default Register
